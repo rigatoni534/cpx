@@ -120,7 +120,7 @@ document.getElementById("connect").onclick = async () => {
 
     writer = port.writable.getWriter();
     isConnected = true;
-    setStatus("Connected", "green");
+    setStatus("paired", "green");
 
     digitalReadEnable(0);
     digitalReadEnable(1);
@@ -130,7 +130,7 @@ document.getElementById("connect").onclick = async () => {
     readLoop();
   } catch (err) {
     console.error(err);
-    setStatus("Connection Failed", "red");
+    setStatus("failed pair, "red");
   }
 };
 
