@@ -1,75 +1,73 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>CPX Dashboard</title>
-    <link rel="icon" type="image/x-icon" href="https://rigatoni534.github.io/favicon.ico">
-    <link rel="stylesheet" href="style.css">
-  </head>
-  <body>
-    <div id="status">unpaired</div>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>CPX Dashboard</title>
+  <link rel="icon" type="image/x-icon" href="https://rigatoni534.github.io/favicon.ico">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="status">unpaired</div>
+  <header>
+    <h1>CPX Dashboard</h1>
+  </header>
+  <main>
+    <section>
+      <h2>Connection</h2>
+      <button id="connect">pair</button>
+      <button id="toggle">test led</button>
+      <button id="queryCaps">query capabilities</button>
+      <button id="autoDetect">auto detect inputs</button>
+    </section>
 
-    <header>
-      <h1>CPX Dashboard</h1>
-    </header>
+    <section>
+      <h2>Buttons & Switch</h2>
+      <div>button A: <span id="btnA">-</span></div>
+      <div>button B: <span id="btnB">-</span></div>
+      <div>slide switch: <span id="sw">-</span></div>
+      <div>digital raw: <pre id="digitalRaw">[]</pre></div>
+    </section>
 
-    <main>
-      <section>
-        <h2>Connection</h2>
-        <button id="connect">pair</button>
-        <button id="toggle">test led</button>
-        <button id="queryCaps">query capabilities</button>
-        <button id="autoDetect">auto detect inputs</button>
-      </section>
+    <section>
+      <h2>Sensors</h2>
+      <div>light (raw): <span id="lightRaw">-</span></div>
+      <div>light (%): <span id="lightPct">-</span></div>
+      <div>sound (raw): <span id="soundRaw">-</span></div>
+      <div>temperature (raw): <span id="tempRaw">-</span></div>
+      <div>temperature: <span id="tempC">-</span> / <span id="tempF">-</span></div>
+      <div>analog map: <pre id="analogMap">[]</pre></div>
+    </section>
 
-      <section>
-        <h2>Buttons & Switch</h2>
-        <div>button A: <span id="btnA">-</span></div>
-        <div>button B: <span id="btnB">-</span></div>
-        <div>slide switch: <span id="sw">-</span></div>
-        <div>digital raw ports: <pre id="digitalRaw">[]</pre></div>
-      </section>
+    <section>
+      <h2>NeoPixels</h2>
+      <div>pixel index <input id="npIndex" type="number" min="0" value="0" /></div>
+      <div>color <input id="npColor" type="color" value="#ff0000" /></div>
+      <div>brightness <input id="npBrightness" type="range" min="0" max="255" value="128" /></div>
+      <div>
+        <button id="npSet">set pixel</button>
+        <button id="npShow">show</button>
+      </div>
+      <div id="neoStatus">neo: not configured</div>
+    </section>
 
-      <section>
-        <h2>Sensors</h2>
-        <div>light (raw): <span id="lightRaw">-</span></div>
-        <div>light (%): <span id="lightPct">-</span></div>
-        <div>sound (raw): <span id="soundRaw">-</span></div>
-        <div>temperature (raw): <span id="tempRaw">-</span></div>
-        <div>temperature: <span id="tempC">-</span> / <span id="tempF">-</span></div>
-        <div>analog channels: <pre id="analogMap">[]</pre></div>
-      </section>
+    <section>
+      <h2>Buzzer</h2>
+      <div>frequency (Hz) <input id="buzzerFreq" type="number" min="20" max="20000" value="440" /></div>
+      <div>
+        <button id="buzzerOn">buzzer on</button>
+        <button id="buzzerOff">buzzer off</button>
+      </div>
+      <div id="buzzerStatus">buzzer: idle</div>
+    </section>
 
-      <section>
-        <h2>NeoPixels</h2>
-        <div>pixel index <input id="npIndex" type="number" min="0" value="0" /></div>
-        <div>color <input id="npColor" type="color" value="#ff0000" /></div>
-        <div>brightness <input id="npBrightness" type="range" min="0" max="255" value="128" /></div>
-        <div>
-          <button id="npSet">set pixel</button>
-          <button id="npShow">show</button>
-        </div>
-        <div id="neoStatus">neo: not configured</div>
-      </section>
+    <section>
+      <h2>Debug</h2>
+      <div>capability raw: <pre id="capRaw">[]</pre></div>
+      <div>console log: <pre id="log"></pre></div>
+    </section>
+  </main>
 
-      <section>
-        <h2>Buzzer</h2>
-        <div>frequency (Hz) <input id="buzzerFreq" type="number" min="20" max="20000" value="440" /></div>
-        <div>
-          <button id="buzzerOn">buzzer on</button>
-          <button id="buzzerOff">buzzer off</button>
-        </div>
-        <div id="buzzerStatus">buzzer: idle</div>
-      </section>
-
-      <section>
-        <h2>Debug</h2>
-        <div>capability raw: <pre id="capRaw">[]</pre></div>
-        <div>console log: <pre id="log"></pre></div>
-      </section>
-    </main>
-
-    <script src="script.js"></script>
-  </body>
+  <script src="script.js"></script>
+</body>
 </html>
