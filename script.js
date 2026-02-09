@@ -15,10 +15,9 @@ let mapped = {
   buzzerPin: null,
   neoSupported: false
 };
-let boardState = {
-  digitalPorts: {},
-  analog: {}
-};
+let boardState = { digitalPorts: {}, analog: {} };
+let incomingBuffer = [];
+let sysexListeners = [];
 
 function log(msg) {
   const el = document.getElementById("log");
@@ -70,80 +69,56 @@ function digitalReadEnable(portNum) {
   send([0xD0 | portNum, 1]);
 }
 
-async function queryCapabilities() {
-  send([0xF0, 0x6B, 0xF7]);
-  const r = port.readable.getReader();
-  let all = [];
-  try {
-    const start = Date.now();
-    while (Date.now() - start < 1000) {
-      const { value, done } = await r.read();
-      if (done) break;
-      if (!value) continue;
-      all.push(...value);
-      if (value.includes(0xF7)) break;
-    }
-  } catch (e) {
-  } finally {
-    try { r.releaseLock(); } catch (e) {}
-  }
-  document.getElementById("capRaw").textContent = JSON.stringify(Array.from(all));
-  return new Uint8Array(all);
-}
-
-function parseCapabilities(bytes) {
-  let i = 0;
-  while (i < bytes.length && bytes[i] !== 0xF0) i++;
-  if (bytes[i] !== 0xF0) return [];
-  i++;
-  const response = bytes[i++];
-  if (response !== 0x6C) return [];
-  const pins = [];
-  while (i < bytes.length && bytes[i] !== 0xF7) {
-    const modes = [];
-    while (i < bytes.length && bytes[i] !== 0x7F) {
-      const mode = bytes[i++];
-      const resolution = bytes[i++];
-      modes.push({ mode, resolution });
-    }
-    i++;
-    pins.push(modes);
-  }
-  capabilityPins = pins;
-  document.getElementById("analogMap").textContent = JSON.stringify(pins.map(p => p.map(m => m.mode)));
-  return pins;
-}
-
-function buildMaps() {
-  analogChannels = [];
-  digitalPorts = {};
-  for (let pinIndex = 0; pinIndex < capabilityPins.length; pinIndex++) {
-    const modes = capabilityPins[pinIndex].map(m => m.mode);
-    if (modes.includes(0x02)) {
-      analogChannels.push(pinIndex);
-    }
-    if (modes.includes(0x03)) {
-      if (!mapped.buzzerPin) mapped.buzzerPin = pinIndex;
-    }
-    const hasDigital = modes.includes(0x00);
-    if (hasDigital) {
-      const portNum = Math.floor(pinIndex / 8);
-      digitalPorts[portNum] = digitalPorts[portNum] || [];
-      digitalPorts[portNum].push(pinIndex);
-    }
-  }
-  document.getElementById("analogMap").textContent = JSON.stringify({ analogChannels, digitalPorts });
-  log("built maps");
-}
-
-function enableAllReports() {
-  Object.keys(digitalPorts).forEach(p => {
-    digitalReadEnable(Number(p));
+function enqueueSysexListener(matchId) {
+  return new Promise(resolve => {
+    sysexListeners.push({ id: matchId, resolve });
   });
-  analogChannels.forEach(ch => {
-    analogReadEnable(ch);
-  });
-  log("enabled reports");
+}
+
+function processIncomingBytes(bytes) {
+  for (let b of bytes) {
+    incomingBuffer.push(b);
+    if (incomingBuffer[0] === 0xF0) {
+      const endIndex = incomingBuffer.indexOf(0xF7);
+      if (endIndex !== -1) {
+        const sysex = incomingBuffer.slice(0, endIndex + 1);
+        incomingBuffer = incomingBuffer.slice(endIndex + 1);
+        handleSysex(sysex);
+        continue;
+      }
+    }
+    if ((incomingBuffer[0] & 0xF0) === 0x90 && incomingBuffer.length >= 3) {
+      const portNum = incomingBuffer[0] & 0x0F;
+      const val = incomingBuffer[1] | (incomingBuffer[2] << 7);
+      handleDigital(portNum, val);
+      incomingBuffer = incomingBuffer.slice(3);
+      continue;
+    }
+    if ((incomingBuffer[0] & 0xF0) === 0xE0 && incomingBuffer.length >= 3) {
+      const pin = incomingBuffer[0] & 0x0F;
+      const val = incomingBuffer[1] | (incomingBuffer[2] << 7);
+      handleAnalog(pin, val);
+      incomingBuffer = incomingBuffer.slice(3);
+      continue;
+    }
+    if (incomingBuffer.length > 256) incomingBuffer = [];
+  }
+}
+
+function handleSysex(sysex) {
+  const id = sysex[1];
+  document.getElementById("capRaw").textContent = JSON.stringify(Array.from(sysex));
+  for (let i = 0; i < sysexListeners.length; i++) {
+    const l = sysexListeners[i];
+    if (l.id === null || l.id === id) {
+      l.resolve(sysex);
+      sysexListeners.splice(i, 1);
+      i--;
+    }
+  }
+  if (id === 0x6C) {
+    parseCapabilities(new Uint8Array(sysex));
+  }
 }
 
 function handleDigital(port, value) {
@@ -182,36 +157,72 @@ function handleAnalog(pin, value) {
   }
 }
 
-async function readLoop() {
-  reader = port.readable.getReader();
-  let buffer = [];
+async function readerLoop() {
   try {
     while (true) {
       const { value, done } = await reader.read();
       if (done) break;
       if (!value) continue;
-      for (let byte of value) {
-        buffer.push(byte);
-        if ((buffer[0] & 0xF0) === 0x90 && buffer.length === 3) {
-          const portNum = buffer[0] & 0x0F;
-          const val = buffer[1] | (buffer[2] << 7);
-          handleDigital(portNum, val);
-          buffer = [];
-        }
-        if ((buffer[0] & 0xF0) === 0xE0 && buffer.length === 3) {
-          const pin = buffer[0] & 0x0F;
-          const val = buffer[1] | (buffer[2] << 7);
-          handleAnalog(pin, val);
-          buffer = [];
-        }
-      }
+      processIncomingBytes(value);
     }
-  } catch (err) {
-    log("read error " + err);
-    setStatus("read error", "red");
+  } catch (e) {
+    log("reader error " + e);
   } finally {
     try { reader.releaseLock(); } catch (e) {}
   }
+}
+
+async function queryCapabilities() {
+  if (!writer) return null;
+  const p = enqueueSysexListener(0x6C);
+  send([0xF0, 0x6B, 0xF7]);
+  const sysex = await p;
+  return sysex;
+}
+
+function parseCapabilities(bytes) {
+  let i = 0;
+  while (i < bytes.length && bytes[i] !== 0xF0) i++;
+  if (bytes[i] !== 0xF0) return [];
+  i++;
+  const response = bytes[i++];
+  if (response !== 0x6C) return [];
+  const pins = [];
+  while (i < bytes.length && bytes[i] !== 0xF7) {
+    const modes = [];
+    while (i < bytes.length && bytes[i] !== 0x7F) {
+      const mode = bytes[i++];
+      const resolution = bytes[i++];
+      modes.push({ mode, resolution });
+    }
+    i++;
+    pins.push(modes);
+  }
+  capabilityPins = pins;
+  buildMaps();
+  document.getElementById("analogMap").textContent = JSON.stringify({ analogChannels, digitalPorts }, null, 2);
+  return pins;
+}
+
+function buildMaps() {
+  analogChannels = [];
+  digitalPorts = {};
+  mapped.buzzerPin = null;
+  for (let pinIndex = 0; pinIndex < capabilityPins.length; pinIndex++) {
+    const modes = capabilityPins[pinIndex].map(m => m.mode);
+    if (modes.includes(0x02)) analogChannels.push(pinIndex);
+    if (modes.includes(0x03) && mapped.buzzerPin === null) mapped.buzzerPin = pinIndex;
+    if (modes.includes(0x00)) {
+      const portNum = Math.floor(pinIndex / 8);
+      digitalPorts[portNum] = digitalPorts[portNum] || [];
+      digitalPorts[portNum].push(pinIndex);
+    }
+  }
+}
+
+function enableAllReports() {
+  Object.keys(digitalPorts).forEach(p => digitalReadEnable(Number(p)));
+  analogChannels.forEach(ch => analogReadEnable(ch));
 }
 
 document.getElementById("connect").onclick = async () => {
@@ -219,9 +230,10 @@ document.getElementById("connect").onclick = async () => {
     port = await navigator.serial.requestPort();
     await port.open({ baudRate: 57600 });
     writer = port.writable.getWriter();
+    reader = port.readable.getReader();
     isConnected = true;
     setStatus("paired", "green");
-    readLoop();
+    readerLoop();
   } catch (err) {
     log(err);
     setStatus("failed pair", "red");
@@ -230,16 +242,14 @@ document.getElementById("connect").onclick = async () => {
 
 document.getElementById("queryCaps").onclick = async () => {
   if (!port) return;
-  const raw = await queryCapabilities();
-  parseCapabilities(raw);
-  buildMaps();
+  const sysex = await queryCapabilities();
+  document.getElementById("capRaw").textContent = JSON.stringify(Array.from(sysex));
   enableAllReports();
 };
 
 document.getElementById("toggle").onclick = () => {
   if (!isConnected) return;
-  let ledState = 0;
-  if (boardState.ledState) ledState = 0; else ledState = 1;
+  let ledState = boardState.ledState ? 0 : 1;
   boardState.ledState = ledState;
   digitalWrite(13, ledState);
 };
@@ -334,8 +344,6 @@ async function autoDetectInputs() {
     const ports = Object.keys(changes.digital).map(Number);
     const p = ports[0];
     const val = changes.digital[p];
-    const bits = [];
-    for (let i = 0; i < 8; i++) bits.push((val >> i) & 1);
     const pins = digitalPorts[p] || [];
     for (let i = 0; i < pins.length; i++) {
       const pin = pins[i];
