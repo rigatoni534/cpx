@@ -1,41 +1,67 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>CPX</title>
   <link rel="icon" type="image/x-icon" href="https://rigatoni534.github.io/favicon.ico">
   <link rel="stylesheet" href="style.css">
-  <title>test</title>
-  <style>
-  #status {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    padding: 6px 10px;
-    background: #333;
-    color: #fff;
-    font-family: sans-serif;
-    font-size: 12px;
-    border-radius: 12px;
-    text-transform: lowercase;
-  }
-</style>
-
 </head>
 <body>
-  <h1>test led</h1>
-  <button id="connect">pair</button>
-  <button id="toggle">test led</button>
-  <div id="status" style="
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  font-family: sans-serif;
-  font-size: 14px;
-  color: #fff;
-">
-  unpaired
-</div>
+  <div id="status">unpaired</div>
 
+  <header>
+    <h1>test led</h1>
+  </header>
+
+  <main class="container">
+    <section class="project">
+      <h2>status</h2>
+      <div class="div">
+        <button id="connect" class="btn">pair</button>
+        <button id="toggle" class="btn">test led</button>
+      </div>
+    </section>
+
+    <section class="project">
+      <h2>buttons and switch</h2>
+      <div class="div">
+        <div class="div2">button A: <span id="btnA">0</span></div>
+        <div class="div2">button B: <span id="btnB">0</span></div>
+        <div class="div2">slide switch: <span id="sw">0</span></div>
+      </div>
+    </section>
+
+    <section class="project">
+      <h2>sensors</h2>
+      <div class="div">
+        <div class="div2">light (raw): <span id="lightRaw">0</span></div>
+        <div class="div2">light (%): <span id="lightPct">0%</span></div>
+        <div class="div2">temperature (raw): <span id="tempRaw">0</span></div>
+        <div class="div2">temperature: <span id="tempC">0°C</span> / <span id="tempF">0°F</span></div>
+      </div>
+    </section>
+
+    <section class="project">
+      <h2>leds 0-9</h2>
+      <div class="div">
+        <label class="div2">pixel index <input id="npIndex" type="number" min="0" value="0" /></label>
+        <label class="div2">color <input id="npColor" type="color" value="#ff0000" /></label>
+        <div class="div2">
+          <button id="npSet" class="btn">set pixel</button>
+          <button id="npShow" class="btn">show</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="project">
+      <h2>buzzer</h2>
+      <div class="div">
+        <button id="buzzerOn" class="btn">buzzer on</button>
+        <button id="buzzerOff" class="btn">buzzer off</button>
+      </div>
+    </section>
+  </main>
 
   <script src="script.js"></script>
 </body>
