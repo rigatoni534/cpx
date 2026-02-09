@@ -4,8 +4,8 @@ let isConnected = false;
 function setStatus(text, color = "#fff") {
   const el = document.getElementById("status");
   el.textContent = text.toLowerCase();
-  el.style.background = color === "green" ? "#0a0" :
-                        color === "red"   ? "#a00" : "#222";
+  el.style.background = color === "green" ? "#0f0" :
+                        color === "red"   ? "#f00" : "#fff";
 }
 
 
@@ -130,7 +130,7 @@ document.getElementById("connect").onclick = async () => {
     readLoop();
   } catch (err) {
     console.error(err);
-    setStatus("failed pair, "red");
+    setStatus("failed pair", "red");
   }
 };
 
