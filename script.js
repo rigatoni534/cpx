@@ -1,4 +1,4 @@
-const VERSION = "1.0.0";
+const VERSION = "1.0.1";
 let port, reader, writer;
 let isConnected = false;
 let buzzerInterval = null;
@@ -216,14 +216,18 @@ function buildMaps() {
   mapped.buzzerPin = null;
   for (let pinIndex = 0; pinIndex < capabilityPins.length; pinIndex++) {
     const modes = capabilityPins[pinIndex].map(m => m.mode);
-    if (modes.includes(0x02)) analogChannels.push(pinIndex);
-    if (modes.includes(0x03) && mapped.buzzerPin === null) mapped.buzzerPin = pinIndex;
-    if (modes.includes(0x00)) {
+    const hasDigital = modes.includes(0); 
+    const hasAnalog = modes.includes(2) || modes.includes(1); 
+    const hasPWM = modes.includes(3);
+    if (hasAnalog) analogChannels.push(pinIndex);
+    if (hasPWM && mapped.buzzerPin === null) mapped.buzzerPin = pinIndex;
+    if (hasDigital) {
       const portNum = Math.floor(pinIndex / 8);
       digitalPorts[portNum] = digitalPorts[portNum] || [];
       digitalPorts[portNum].push(pinIndex);
     }
   }
+  log(`buildMaps: analogChannels=${JSON.stringify(analogChannels)} buzzerPin=${mapped.buzzerPin} digitalPorts=${JSON.stringify(digitalPorts)}`);
 }
 
 function enableAllReports() {
@@ -316,15 +320,6 @@ function stopBuzzer() {
   }
 }
 
-document.getElementById("buzzerOn").onclick = () => {
-  const freq = parseInt(document.getElementById("buzzerFreq").value || "440", 10);
-  startBuzzer(freq);
-};
-
-document.getElementById("buzzerOff").onclick = () => {
-  stopBuzzer();
-};
-
 async function autoDetectInputs() {
   if (!isConnected) return;
   setStatus("detecting", "");
@@ -332,13 +327,13 @@ async function autoDetectInputs() {
   analogChannels.forEach(ch => baseline.analog[ch] = boardState.analog[ch] || 0);
   Object.keys(digitalPorts).forEach(p => baseline.digital[p] = boardState.digitalPorts[p] || 0);
   log("baseline captured, now interact with board (press A, B, flip switch, change light, make sound)");
-  await new Promise(r => setTimeout(r, 1500));
+  await new Promise(r => setTimeout(r, 1200));
   const changes = { analog: {}, digital: {} };
   const start = Date.now();
-  while (Date.now() - start < 5000) {
+  while (Date.now() - start < 7000) {
     analogChannels.forEach(ch => {
       const v = boardState.analog[ch] || 0;
-      if (Math.abs(v - (baseline.analog[ch] || 0)) > 20) changes.analog[ch] = v;
+      if (Math.abs(v - (baseline.analog[ch] || 0)) > 10) changes.analog[ch] = v;
     });
     Object.keys(digitalPorts).forEach(p => {
       const v = boardState.digitalPorts[p] || 0;
