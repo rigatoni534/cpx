@@ -1,11 +1,13 @@
 let port, reader, writer;
 let isConnected = false;
 
-function setStatus(text, color = "#444") {
+function setStatus(text, color = "#fff") {
   const el = document.getElementById("status");
-  el.textContent = text;
-  el.style.color = color;
+  el.textContent = text.toLowerCase();
+  el.style.background = color === "green" ? "#0a0" :
+                        color === "red"   ? "#a00" : "#222";
 }
+
 
 function send(bytes) {
   if (!writer) return;
