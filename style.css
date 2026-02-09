@@ -1,1 +1,109 @@
-// css soon
+body {
+  background: #333;
+  font-family: monospace;
+  color: #fff;
+  margin: 0;
+  padding: 20px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+h1, h2 {
+  color: #fff;
+  margin: 0 0 12px 0;
+}
+h1 {
+  text-align: center;
+  background-image: linear-gradient(45deg, #ffff33, #ff0000);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  font-size: 48px;
+  font-weight: bold;
+  margin-bottom: 18px;
+}
+h2 {
+  font-size: 20px;
+  margin-bottom: 8px;
+}
+.container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+.project {
+  border-radius: 12px;
+  border: 2px solid #fff;
+  background-color: #444;
+  padding: 12px;
+  width: 100%;
+  box-sizing: border-box;
+}
+.div {
+  font-size: 16px;
+  padding-top: 0px;
+  margin-left: 4px;
+}
+.div2 {
+  margin-left: 4px;
+  margin-bottom: 8px;
+  display: block;
+}
+a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: 16px;
+  text-decoration: none;
+  color: white;
+  margin-left: 10px;
+  border-radius: 12px;
+  border: 2px solid white;
+  background-color: #444;
+  padding: 8px 12px;
+}
+.btn {
+  background: #222;
+  color: #fff;
+  border: 1px solid #888;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: monospace;
+  font-size: 14px;
+}
+.btn:active { transform: translateY(1px); }
+#status {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 6px 10px;
+  background: #333;
+  color: #fff;
+  font-family: sans-serif;
+  font-size: 12px;
+  border-radius: 12px;
+  text-transform: lowercase;
+}
+input[type="color"] {
+  width: 48px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  vertical-align: middle;
+}
+input[type="number"] {
+  width: 64px;
+  padding: 4px;
+  border-radius: 6px;
+  border: 1px solid #666;
+  background: #222;
+  color: #fff;
+}
+@media (max-width: 520px) {
+  h1 { font-size: 36px; }
+  .container { grid-template-columns: 1fr; }
+}
