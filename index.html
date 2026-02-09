@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>CPX</title>
+  <title>CPX Dashboard</title>
   <link rel="icon" type="image/x-icon" href="https://rigatoni534.github.io/favicon.ico">
   <link rel="stylesheet" href="style.css">
 </head>
@@ -11,12 +11,12 @@
   <div id="status">unpaired</div>
 
   <header>
-    <h1>test led</h1>
+    <h1>CPX Dashboard</h1>
   </header>
 
   <main class="container">
     <section class="project">
-      <h2>status</h2>
+      <h2>Connection</h2>
       <div class="div">
         <button id="connect" class="btn">pair</button>
         <button id="toggle" class="btn">test led</button>
@@ -24,7 +24,7 @@
     </section>
 
     <section class="project">
-      <h2>buttons and switch</h2>
+      <h2>Buttons & Switch</h2>
       <div class="div">
         <div class="div2">button A: <span id="btnA">0</span></div>
         <div class="div2">button B: <span id="btnB">0</span></div>
@@ -33,20 +33,22 @@
     </section>
 
     <section class="project">
-      <h2>sensors</h2>
+      <h2>Sensors</h2>
       <div class="div">
         <div class="div2">light (raw): <span id="lightRaw">0</span></div>
         <div class="div2">light (%): <span id="lightPct">0%</span></div>
+        <div class="div2">sound (raw): <span id="soundRaw">0</span></div>
         <div class="div2">temperature (raw): <span id="tempRaw">0</span></div>
         <div class="div2">temperature: <span id="tempC">0°C</span> / <span id="tempF">0°F</span></div>
       </div>
     </section>
 
     <section class="project">
-      <h2>leds 0-9</h2>
+      <h2>NeoPixels</h2>
       <div class="div">
         <label class="div2">pixel index <input id="npIndex" type="number" min="0" value="0" /></label>
         <label class="div2">color <input id="npColor" type="color" value="#ff0000" /></label>
+        <label class="div2">brightness <input id="npBrightness" type="range" min="0" max="255" value="128" /></label>
         <div class="div2">
           <button id="npSet" class="btn">set pixel</button>
           <button id="npShow" class="btn">show</button>
@@ -55,10 +57,13 @@
     </section>
 
     <section class="project">
-      <h2>buzzer</h2>
+      <h2>Buzzer</h2>
       <div class="div">
-        <button id="buzzerOn" class="btn">buzzer on</button>
-        <button id="buzzerOff" class="btn">buzzer off</button>
+        <label class="div2">frequency (Hz) <input id="buzzerFreq" type="number" min="20" max="20000" value="440" /></label>
+        <div class="div2">
+          <button id="buzzerOn" class="btn">buzzer on</button>
+          <button id="buzzerOff" class="btn">buzzer off</button>
+        </div>
       </div>
     </section>
   </main>
